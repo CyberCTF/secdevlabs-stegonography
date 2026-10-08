@@ -1,0 +1,224 @@
+{
+  "generated_by_isoloom": "from isoloom.yml; don't edit: change the spec and run `isoloom generate` (`isoloom check` fails when this file is out of date)",
+  "resolved_version": 1,
+  "name": "secdevlabs-stegonography",
+  "instance": null,
+  "inputs": [],
+  "networks": {
+    "lab": {
+      "cidr": "10.60.102.0/24",
+      "docker_cidr": "10.60.102.0/24",
+      "internet": false,
+      "gateway": null,
+      "gateway_address": "10.60.102.1",
+      "router": null,
+      "controller": "10.60.102.253"
+    }
+  },
+  "reach": [],
+  "machines": {
+    "db": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "docker"
+      ],
+      "arch": "amd64",
+      "os": null,
+      "windows": false,
+      "addresses": {
+        "lab": "10.60.102.20"
+      },
+      "docker_addresses": {
+        "lab": "10.60.102.20"
+      },
+      "services": [
+        {
+          "port": 27017,
+          "name": "mongodb",
+          "http": false,
+          "publish": null
+        }
+      ],
+      "depends_on": [],
+      "inputs": [],
+      "volumes": {
+        "data": "/data/db"
+      },
+      "resources": {
+        "cpus": 1,
+        "memory_mb": 512,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": true
+    },
+    "app": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "docker"
+      ],
+      "arch": "amd64",
+      "os": null,
+      "windows": false,
+      "addresses": {
+        "lab": "10.60.102.10"
+      },
+      "docker_addresses": {
+        "lab": "10.60.102.10"
+      },
+      "services": [
+        {
+          "port": 10006,
+          "name": "web",
+          "http": true,
+          "publish": 10006
+        }
+      ],
+      "depends_on": [
+        "db"
+      ],
+      "inputs": [],
+      "volumes": {},
+      "resources": {
+        "cpus": 1,
+        "memory_mb": 512,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": true
+    }
+  },
+  "start_order": [
+    "db",
+    "app"
+  ],
+  "clones": {},
+  "tools": {},
+  "groups": {},
+  "router": null,
+  "controller": {
+    "addresses": {
+      "lab": "10.60.102.253"
+    }
+  },
+  "published": [
+    {
+      "machine": "app",
+      "port": 10006,
+      "host_port": 10006
+    }
+  ],
+  "targets": {
+    "possible": [
+      "docker",
+      "hosted",
+      "docker-vm",
+      "cloud-docker",
+      "kubernetes"
+    ],
+    "generated": [
+      "docker",
+      "hosted",
+      "docker-vm",
+      "cloud-docker",
+      "kubernetes"
+    ],
+    "refused": {},
+    "not_possible": {
+      "hybrid": "only when some machines are containers and others are VMs",
+      "vagrant": "needs `vm:` on db, app",
+      "proxmox": "needs `vm:` on db, app",
+      "cloud-vm": "needs `vm:` on db, app",
+      "external": "needs `external:` on db, app"
+    }
+  },
+  "checks": {
+    "default_position": "networks",
+    "positions": [
+      {
+        "position": "networks",
+        "machine": null,
+        "runner": "isoloom-check",
+        "checks": [
+          {
+            "name": "the home page answers",
+            "derived": false,
+            "kind": "http",
+            "target": "http://app:10006/",
+            "expect": "200",
+            "wait": 180
+          },
+          {
+            "name": "the login page answers",
+            "derived": false,
+            "kind": "http",
+            "target": "http://app:10006/login",
+            "expect": "200",
+            "wait": 30
+          },
+          {
+            "name": "a malformed login answers with a stack trace",
+            "derived": false,
+            "kind": "script",
+            "target": "checks/stack-trace.sh",
+            "expect": "",
+            "wait": 0
+          }
+        ]
+      },
+      {
+        "position": "db",
+        "machine": "db",
+        "runner": "isoloom-check-db",
+        "checks": [
+          {
+            "name": "app:10006 from db",
+            "derived": true,
+            "kind": "http",
+            "target": "http://10.60.102.10:10006/",
+            "expect": "any",
+            "wait": 30
+          },
+          {
+            "name": "no internet from db",
+            "derived": true,
+            "kind": "http",
+            "target": "http://1.1.1.1/",
+            "expect": "blocked",
+            "wait": 0
+          }
+        ]
+      },
+      {
+        "position": "app",
+        "machine": "app",
+        "runner": "isoloom-check-app",
+        "checks": [
+          {
+            "name": "db:27017 from app",
+            "derived": true,
+            "kind": "tcp",
+            "target": "10.60.102.20:27017",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "no internet from app",
+            "derived": true,
+            "kind": "http",
+            "target": "http://1.1.1.1/",
+            "expect": "blocked",
+            "wait": 0
+          }
+        ]
+      }
+    ]
+  },
+  "message": "Stegonography answers at http://localhost:10006/. Enumerate its\npages, then see how much the errors, the login and the session cookie give away.\n"
+}

@@ -1,0 +1,14 @@
+{
+  "title": "secDevLabs Stegonography",
+  "description": "A Node.js steganography site backed by MongoDB, with an admin panel behind a login page. The site keeps a default account, prints full stack traces and names its technology in its session cookie.",
+  "question": "Find the hidden admin login page and get into the admin panel.",
+  "category": "WEB",
+  "difficulty": 1,
+  "evidence_kind": "SECRET",
+  "capabilities": [
+    "security-misconfiguration",
+    "default-credentials",
+    "verbose-errors",
+    "content-discovery"
+  ]
+}

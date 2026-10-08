@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://www.isoloom.com/schema/v1.json
+# Stegonography (secDevLabs, by Globo.com) as an Isoloom spec: a Node.js steganography site with
+# several Security Misconfigurations (default admin credentials, verbose errors, a revealing
+# session cookie), vendored unchanged in build/app/app/ (the app folder
+# owasp-top10-2021-apps/a5/stegonography of secDevLabs), built by an overlay of upstream's
+# Dockerfile, and its MongoDB machine (the app connects to the host name `db`).
+# `isoloom generate`, then `isoloom run docker`.
+version: 1
+name: secdevlabs-stegonography
+
+networks:
+  lab: { cidr: 10.60.102.0/24, internet: false }
+
+machines:
+  db:
+    networks: { lab: 20 }
+    services: [{ port: 27017, name: mongodb }]
+    resources: { cpus: 1, memory_mb: 512 }
+    volumes: { data: /data/db }
+    docker:
+      image: docker.io/library/mongo:4.0.28
+
+  app:
+    networks: { lab: 10 }
+    services: [{ port: 10006, name: web, http: true, publish: 10006 }]
+    resources: { cpus: 1, memory_mb: 512 }
+    depends_on: [db]
+    docker:
+      build: build/app
+
+checks:
+  - name: the home page answers
+    http: http://app:10006/
+    wait: 180
+  - name: the login page answers
+    http: http://app:10006/login
+  - name: a malformed login answers with a stack trace
+    script: checks/stack-trace.sh
+
+message: |
+  Stegonography answers at http://localhost:{{ machines.app.services.0.publish }}/. Enumerate its
+  pages, then see how much the errors, the login and the session cookie give away.
