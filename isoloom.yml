@@ -8,6 +8,9 @@
 version: 1
 name: secdevlabs-stegonography
 
+# Given by the CyberCTF launcher: this player's flag. Without it the development flag.
+inputs: [CTF_FLAG_MAIN]
+
 networks:
   lab: { cidr: 10.60.102.0/24, internet: false }
 
@@ -25,8 +28,11 @@ machines:
     services: [{ port: 10006, name: web, http: true, publish: 10006 }]
     resources: { cpus: 1, memory_mb: 512 }
     depends_on: [db]
+    inputs: [CTF_FLAG_MAIN]
+    volumes: { ctf: /ctf }   # the flag, written by ctf/flag.sh at every start
     docker:
       build: build/app
+      init: [ctf/flag.sh]
 
 checks:
   - name: the home page answers

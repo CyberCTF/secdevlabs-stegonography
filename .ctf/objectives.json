@@ -1,0 +1,44 @@
+{
+  "objectives": [
+    {
+      "key": "main",
+      "title": "Read the flag",
+      "prompt": "Get into the admin panel and retrieve the flag (/ctf/flag).",
+      "check": {
+        "evidence": "SECRET",
+        "format": "FLAG{%s}"
+      },
+      "dev": "FLAG{dev-secdevlabs-stegonography}",
+      "hints": [
+        "Errors and cookies reveal more than they should.",
+        "Read about default credentials and security misconfiguration."
+      ],
+      "steps": [
+        {
+          "key": "runtime",
+          "title": "Identify the stack",
+          "prompt": "Which server-side runtime does the session cookie name give away?",
+          "check": {
+            "answer": [
+              "node",
+              "nodejs",
+              "node.js",
+              "express"
+            ]
+          }
+        },
+        {
+          "key": "class",
+          "title": "Name the weakness",
+          "prompt": "Which OWASP category fits this lab?",
+          "check": {
+            "answer": [
+              "security misconfiguration",
+              "misconfiguration"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
